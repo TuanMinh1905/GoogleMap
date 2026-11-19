@@ -178,16 +178,46 @@ export default function MapView({
     });
   }, [markers]);
 
-  // Fly to position
+  // Fly to position — nếu có vị trí hiện tại, fitBounds để hiện cả 2 điểm
   useEffect(() => {
     if (!mapRef.current || !flyToPosition) return;
-    mapRef.current.flyTo(
-      [flyToPosition.lat, flyToPosition.lng],
-      flyToPosition.zoom || 16,
-      { duration: 1 }
-    );
+
+    if (currentPosition) {
+      const destLat = flyToPosition.lat;
+      const destLng = flyToPosition.lng;
+      const curLat = currentPosition.lat;
+      const curLng = currentPosition.lng;
+
+      // Tính khoảng cách đơn giản (độ)
+      const dist = Math.sqrt(
+        Math.pow(destLat - curLat, 2) + Math.pow(destLng - curLng, 2)
+      );
+
+      if (dist > 0.01) {
+        // Xa hơn ~1km → fitBounds để hiện cả 2 điểm
+        const bounds = L.latLngBounds(
+          [destLat, destLng],
+          [curLat, curLng]
+        );
+        mapRef.current.fitBounds(bounds, {
+          padding: [80, 80],
+          animate: true,
+          duration: 1,
+          maxZoom: flyToPosition.zoom || 16,
+        });
+      } else {
+        // Gần → zoom vào thẳng
+        mapRef.current.flyTo([destLat, destLng], flyToPosition.zoom || 16, { duration: 1 });
+      }
+    } else {
+      mapRef.current.flyTo(
+        [flyToPosition.lat, flyToPosition.lng],
+        flyToPosition.zoom || 16,
+        { duration: 1 }
+      );
+    }
     onFlyComplete();
-  }, [flyToPosition, onFlyComplete]);
+  }, [flyToPosition, onFlyComplete, currentPosition]);
 
   // Search preview pin (đỏ) — hiện khi tìm kiếm, xóa khi không có
   useEffect(() => {
