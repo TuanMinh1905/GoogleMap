@@ -91,8 +91,10 @@ export default function MarkerForm({
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!name.trim()) return;
-    onSave({ name: name.trim(), address, note, priority, lat, lng, city });
+    if (!address.trim()) return;
+    // Nếu không nhập tên → tự dùng phần đầu địa chỉ làm tên
+    const finalName = name.trim() || address.split(',')[0].trim();
+    onSave({ name: finalName, address, note, priority, lat, lng, city });
     resetForm();
   };
 
@@ -142,7 +144,7 @@ export default function MarkerForm({
           {/* Tên điểm */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tên điểm <span className="text-red-400">*</span>
+              Tên điểm
             </label>
             <input
               type="text"
@@ -156,7 +158,7 @@ export default function MarkerForm({
 
           {/* Địa chỉ + autocomplete inline */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ <span className="text-red-400">*</span></label>
             <div className="relative">
               <input
                 type="text"
@@ -279,7 +281,7 @@ export default function MarkerForm({
           </button>
           <button
             type="submit"
-            disabled={!name.trim()}
+            disabled={!address.trim()}
             className="flex-1 px-4 py-2.5 text-white bg-blue-600 rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {mode === 'add' ? '➕ Thêm' : '💾 Lưu'}
