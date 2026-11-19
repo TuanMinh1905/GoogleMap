@@ -13,23 +13,25 @@ const APP_RULES: Record<string, Rule> = {
     title: '🗺️ Bản đồ',
     description: 'Khu vực hiển thị bản đồ chính với tất cả marker',
     items: [
-      'Chạm/Click vào bản đồ để thêm điểm mới tại vị trí đó',
+      'Chạm/Click vào bản đồ → tự động lấy địa chỉ → mở form thêm điểm',
       'Chấm xanh dương nhấp nháy là vị trí hiện tại của bạn',
       '🔴 Đỏ = Gấp | 🟡 Vàng = Bình thường | 🟢 Xanh = Khi nào tiện',
       'Bấm vào marker để xem popup thông tin',
       'Dùng 2 ngón để zoom trên điện thoại',
       'Nút ⊕ góc dưới phải: về vị trí hiện tại',
+      'Dữ liệu lưu trong máy (localStorage) — không cần internet để xem',
     ],
   },
   search: {
     title: '🔍 Tìm kiếm',
-    description: 'Tìm kiếm địa chỉ qua Nominatim (OpenStreetMap)',
+    description: 'Tìm kiếm địa chỉ qua Photon API (dữ liệu OpenStreetMap)',
     items: [
-      'Gõ tên địa điểm hoặc địa chỉ',
-      'Kết quả hiện sau 0.4 giây khi ngừng gõ',
+      'Gõ tên địa điểm hoặc địa chỉ (≥ 3 ký tự)',
+      'Kết quả hiện sau 1.5 giây khi ngừng gõ',
       'Chọn kết quả → bay đến vị trí + mở form thêm điểm',
       'Phím tắt: "/" hoặc Ctrl+K để focus ô tìm kiếm',
-      'Ưu tiên kết quả tại Việt Nam',
+      'Ưu tiên kết quả gần khu vực TP.HCM',
+      'Trong form thêm điểm cũng có autocomplete riêng',
     ],
   },
   list: {
@@ -47,7 +49,7 @@ const APP_RULES: Record<string, Rule> = {
   },
   shortcuts: {
     title: '⌨️ Phím tắt',
-    description: 'Các phím tắt để thao tác nhanh',
+    description: 'Các phím tắt để thao tác nhanh (trên máy tính)',
     items: [
       '/ hoặc Ctrl+K — Focus ô tìm kiếm',
       'Escape — Đóng dialog/panel đang mở',

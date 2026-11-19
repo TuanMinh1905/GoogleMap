@@ -2,6 +2,9 @@
 
 > Tài liệu này mô tả quy ước cho từng phần giao diện.
 > Mục đích: Khi quá lâu nhìn lại hoặc người ngoài đọc, sẽ hiểu rõ từng phần hoạt động ra sao.
+>
+> **Đồng bộ**: Nội dung này phải khớp với `APP_RULES` trong `src/components/InfoModal.tsx`.
+> Khi sửa ở đây → sửa cả InfoModal, và ngược lại.
 
 ---
 
@@ -28,13 +31,13 @@
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Map provider | Leaflet + OpenStreetMap tiles |
+| Map provider | Leaflet + OpenStreetMap tiles (`tile.openstreetmap.de`) |
 | Default center | HCM (10.7769, 106.7009) |
 | Auto center | GPS vị trí hiện tại (nếu cho phép) |
 | Zoom controls | Góc dưới phải |
 | Marker icons | SVG custom, màu theo priority |
 | Current location | Chấm xanh dương + pulse animation |
-| Click action | Mở form thêm điểm mới |
+| Click action | Reverse geocode (Photon) → mở form thêm điểm mới |
 
 **Marker Colors**:
 - 🔴 `#EF4444` — Urgent (Gấp)
@@ -49,13 +52,14 @@
 
 | Thuộc tính | Giá trị |
 |---|---|
-| API | Nominatim (OpenStreetMap) |
-| Debounce | 400ms |
-| Country filter | Việt Nam (`countrycodes=vn`) |
+| API | **Photon** (`photon.komoot.io`) |
+| Debounce | 1500ms |
+| Location bias | HCM (lat=10.78, lon=106.7) |
 | Max results | 5 |
-| Language | Tiếng Việt (`Accept-Language: vi`) |
 | Position | Top center, floating trên map |
 | Menu button (☰) | Toggle sidebar/bottom sheet |
+
+**Lưu ý**: Không dùng Nominatim (ISP block). Photon không hỗ trợ `lang=vi`.
 
 ---
 
@@ -72,6 +76,15 @@
 | Auto-fill | Địa chỉ + tọa độ từ map click / search |
 | Hiển thị | Modal từ dưới lên (mobile), center (desktop) |
 | Nút Xóa | Chỉ hiển thị ở mode `edit` |
+| **Autocomplete** | Gõ ≥ 3 ký tự → 1500ms debounce → Photon search → danh sách gợi ý inline |
+
+**Autocomplete flow**:
+1. User gõ ≥ 3 ký tự
+2. Debounce 1500ms
+3. Gọi `searchAddress()` → Photon API
+4. Hiển thị danh sách gợi ý inline (không absolute, tránh bị clip bởi overflow)
+5. User chọn → fill address + lat/lng + city
+6. Nếu không có kết quả → hiện "Không tìm thấy — thử gõ tên khác"
 
 ---
 
@@ -104,7 +117,7 @@
 
 ---
 
-## ℹ️ InfoModal (Hướng dẫn)
+## ℹ️ InfoModal (Quy tắc & Hướng dẫn)
 
 **File**: `src/components/InfoModal.tsx`
 
@@ -117,3 +130,4 @@
 
 **Quy tắc cập nhật**: Khi thêm tính năng mới, **PHẢI** thêm mô tả vào `APP_RULES` object trong file này.
 
+**Mục đích nút ℹ️**: Chỉ chiếm 1 nút nhỏ trên giao diện. Khi cần hiểu app hoạt động ra sao → ấn vào đọc. Không chiếm không gian thường xuyên.
