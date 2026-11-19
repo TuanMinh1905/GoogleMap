@@ -61,7 +61,7 @@ GGMap/
 2. **Bản đồ** auto center vào vị trí GPS hiện tại
 3. **Thêm điểm**:
    - **Cách 1**: Chạm vào bản đồ → reverse geocode tự động điền địa chỉ → mở form
-   - **Cách 2**: Gõ tìm kiếm ở SearchBar → chọn kết quả → bay đến vị trí + mở form
+   - **Cách 2**: Gõ tìm kiếm ở SearchBar → chọn kết quả → fly đến vị trí + hiện **pin đỏ preview** → ấn **"Lưu địa chỉ"** mới mở form
    - **Cách 3**: Gõ địa chỉ trong MarkerForm → autocomplete gợi ý → chọn
 4. **Xem danh sách**: Kéo bottom sheet (mobile) hoặc mở sidebar (desktop)
 5. **Sắp xếp**: Theo khoảng cách / ưu tiên / tên, nhóm theo thành phố

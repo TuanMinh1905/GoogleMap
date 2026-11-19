@@ -63,6 +63,13 @@ export default function Home() {
     lat: number;
     lng: number;
   } | null>(null);
+  // Preview pin đỏ khi tìm kiếm (chưa lưu)
+  const [searchPreview, setSearchPreview] = useState<{
+    lat: number;
+    lng: number;
+    address: string;
+    city: string;
+  } | null>(null);
 
   // ===== Load markers từ localStorage =====
   useEffect(() => {
@@ -158,22 +165,34 @@ export default function Home() {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
 
+    // Fly đến vị trí tìm kiếm
     setFlyTo({ lat, lng, zoom: 16 });
 
-    setFormData({
+    // Hiện preview pin đỏ, chưa mở form
+    setSearchPreview({
       lat,
       lng,
       address: result.display_name,
       city: getCityFromAddress(result.address),
     });
-    setFormMode('add');
-    setEditingMarker(null);
-    setShowForm(true);
   }, []);
 
   const handleMarkerClick = useCallback((marker: Marker) => {
     setFlyTo({ lat: marker.lat, lng: marker.lng, zoom: 16 });
   }, []);
+
+  const handleSaveSearchPreview = useCallback(() => {
+    if (!searchPreview) return;
+    setFormData({
+      lat: searchPreview.lat,
+      lng: searchPreview.lng,
+      address: searchPreview.address,
+      city: searchPreview.city,
+    });
+    setFormMode('add');
+    setEditingMarker(null);
+    setShowForm(true);
+  }, [searchPreview]);
 
   const handleEditMarker = useCallback((marker: Marker) => {
     setEditingMarker(marker);
@@ -235,13 +254,41 @@ export default function Home() {
           onMarkerClick={handleMarkerClick}
           flyToPosition={flyTo}
           onFlyComplete={() => setFlyTo(null)}
+          searchPreviewPosition={searchPreview}
         />
 
         {/* Thanh tìm kiếm */}
         <SearchBar
           onSelectResult={handleSearchSelect}
           onMenuClick={() => setShowList((prev) => !prev)}
+          onClear={() => setSearchPreview(null)}
         />
+
+        {/* Nút "Lưu địa chỉ" — hiện khi có search preview */}
+        {searchPreview && !showForm && (
+          <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-[1000] flex flex-col items-center gap-2 animate-slide-up">
+            <div className="bg-white rounded-xl shadow-lg px-4 py-2 max-w-xs w-full text-center">
+              <p className="text-xs text-gray-500 truncate">{searchPreview.address.split(',').slice(0, 3).join(',')}</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSearchPreview(null)}
+                className="px-4 py-2.5 bg-white text-gray-600 rounded-xl shadow-lg text-sm font-medium hover:bg-gray-50 active:bg-gray-100 transition-colors border border-gray-200"
+              >
+                ✕ Bỏ qua
+              </button>
+              <button
+                onClick={handleSaveSearchPreview}
+                className="px-5 py-2.5 bg-red-500 text-white rounded-xl shadow-lg text-sm font-semibold hover:bg-red-600 active:bg-red-700 transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+                </svg>
+                Lưu địa chỉ
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Nút hướng dẫn (ℹ️) */}
         <button
@@ -280,8 +327,12 @@ export default function Home() {
           onClose={() => {
             setShowForm(false);
             setEditingMarker(null);
+            setSearchPreview(null);
           }}
-          onSave={handleSaveMarker}
+          onSave={(data) => {
+            handleSaveMarker(data);
+            setSearchPreview(null);
+          }}
           onDelete={formMode === 'edit' ? handleDeleteMarker : undefined}
           initialData={formData}
           mode={formMode}

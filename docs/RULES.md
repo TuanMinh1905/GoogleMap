@@ -63,6 +63,13 @@
 - **KHÔNG** dùng Nominatim (ISP Việt Nam block)
 - Error handling: trả `[]` hoặc `null`, không throw
 
+### Luồng Search → Lưu địa chỉ (quan trọng)
+- Khi chọn kết quả SearchBar → fly to + hiện **search preview pin đỏ** — KHÔNG mở form ngay
+- Floating bar cuối màn hình: hiện tên địa chỉ + nút **"Lưu địa chỉ"** + nút **"Bỏ qua"**
+- Chỉ khi ấn "Lưu địa chỉ" mới mở `MarkerForm` với dữ liệu pre-fill
+- Khi đóng form hoặc bấm X trên SearchBar → xóa preview pin
+- State `searchPreview` ở `page.tsx`, truyền xuống `MapView` qua prop `searchPreviewPosition`
+
 ### Supabase (tương lai — chưa dùng)
 - File client: `src/lib/supabase.ts`
 - Schema: `supabase/schema.sql`

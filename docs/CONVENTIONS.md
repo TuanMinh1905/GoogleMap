@@ -38,11 +38,13 @@
 | Marker icons | SVG custom, màu theo priority |
 | Current location | Chấm xanh dương + pulse animation |
 | Click action | Reverse geocode (Photon) → mở form thêm điểm mới |
+| **Search preview pin** | Pin đỏ (#EF4444) tạm thời — hiện khi chọn kết quả tìm kiếm, biến mất khi lưu/bỏ qua |
 
 **Marker Colors**:
 - 🔴 `#EF4444` — Urgent (Gấp)
 - 🟡 `#F59E0B` — Normal (Bình thường)
 - 🟢 `#22C55E` — Whenever (Khi nào tiện)
+- 📍 `#EF4444` — Search preview (pin tạm, chưa lưu)
 
 ---
 
@@ -58,6 +60,8 @@
 | Max results | 5 |
 | Position | Top center, floating trên map |
 | Menu button (☰) | Toggle sidebar/bottom sheet |
+| **Chọn kết quả** | Fly đến vị trí + hiện search preview pin đỏ — **không** mở form ngay |
+| **Nút X (clear)** | Xóa query + xóa search preview pin |
 
 **Lưu ý**: Không dùng Nominatim (ISP block). Photon không hỗ trợ `lang=vi`.
 

@@ -35,12 +35,28 @@ const currentLocationIcon = L.divIcon({
   iconAnchor: [9, 9],
 });
 
+const searchPreviewIcon = L.divIcon({
+  className: 'search-preview-marker',
+  html: `
+    <div style="position:relative;width:30px;height:42px;">
+      <svg viewBox="0 0 30 42" width="30" height="42">
+        <path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 27 15 27s15-16.5 15-27C30 6.7 23.3 0 15 0z" fill="#EF4444" stroke="white" stroke-width="2"/>
+        <circle cx="15" cy="15" r="7" fill="white"/>
+      </svg>
+    </div>
+  `,
+  iconSize: [30, 42],
+  iconAnchor: [15, 42],
+  popupAnchor: [0, -42],
+});
+
 interface MapViewProps {
   markers: Marker[];
   onMapClick: (lat: number, lng: number) => void;
   onMarkerClick: (marker: Marker) => void;
   flyToPosition: { lat: number; lng: number; zoom?: number } | null;
   onFlyComplete: () => void;
+  searchPreviewPosition?: { lat: number; lng: number } | null;
 }
 
 export default function MapView({
@@ -49,11 +65,13 @@ export default function MapView({
   onMarkerClick,
   flyToPosition,
   onFlyComplete,
+  searchPreviewPosition,
 }: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const currentLocMarkerRef = useRef<L.Marker | null>(null);
+  const searchPreviewMarkerRef = useRef<L.Marker | null>(null);
   const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
   const onMapClickRef = useRef(onMapClick);
   const onMarkerClickRef = useRef(onMarkerClick);
@@ -170,6 +188,30 @@ export default function MapView({
     );
     onFlyComplete();
   }, [flyToPosition, onFlyComplete]);
+
+  // Search preview pin (đỏ) — hiện khi tìm kiếm, xóa khi không có
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    if (searchPreviewPosition) {
+      if (searchPreviewMarkerRef.current) {
+        searchPreviewMarkerRef.current.setLatLng([
+          searchPreviewPosition.lat,
+          searchPreviewPosition.lng,
+        ]);
+      } else {
+        searchPreviewMarkerRef.current = L.marker(
+          [searchPreviewPosition.lat, searchPreviewPosition.lng],
+          { icon: searchPreviewIcon, zIndexOffset: 500 }
+        ).addTo(mapRef.current);
+      }
+    } else {
+      if (searchPreviewMarkerRef.current) {
+        searchPreviewMarkerRef.current.remove();
+        searchPreviewMarkerRef.current = null;
+      }
+    }
+  }, [searchPreviewPosition]);
 
   const goToCurrentLocation = useCallback(() => {
     if (!mapRef.current || !currentPosition) return;

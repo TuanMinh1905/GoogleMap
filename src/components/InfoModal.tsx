@@ -28,7 +28,9 @@ const APP_RULES: Record<string, Rule> = {
     items: [
       'Gõ tên địa điểm hoặc địa chỉ (≥ 3 ký tự)',
       'Kết quả hiện sau 1.5 giây khi ngừng gõ',
-      'Chọn kết quả → bay đến vị trí + mở form thêm điểm',
+      'Chọn kết quả → bay đến vị trí + hiện 📍 pin đỏ preview',
+      'Ấn "Lưu địa chỉ" (nút đỏ bên dưới) để mở form nhập thông tin',
+      'Ấn "Bỏ qua" hoặc X để xóa pin preview',
       'Phím tắt: "/" hoặc Ctrl+K để focus ô tìm kiếm',
       'Ưu tiên kết quả gần khu vực TP.HCM',
       'Trong form thêm điểm cũng có autocomplete riêng',

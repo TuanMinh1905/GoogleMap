@@ -7,9 +7,10 @@ import { SearchResult } from '@/types';
 interface SearchBarProps {
   onSelectResult: (result: SearchResult) => void;
   onMenuClick: () => void;
+  onClear?: () => void;
 }
 
-export default function SearchBar({ onSelectResult, onMenuClick }: SearchBarProps) {
+export default function SearchBar({ onSelectResult, onMenuClick, onClear }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -58,6 +59,7 @@ export default function SearchBar({ onSelectResult, onMenuClick }: SearchBarProp
     setQuery('');
     setResults([]);
     setShowResults(false);
+    onClear?.();
   };
 
   return (
