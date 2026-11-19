@@ -44,7 +44,7 @@ export default function SearchBar({ onSelectResult, onMenuClick }: SearchBarProp
       setResults(data);
       setShowResults(data.length > 0);
       setIsSearching(false);
-    }, 400);
+    }, 1500);
   };
 
   const handleSelect = (result: SearchResult) => {

@@ -7,10 +7,31 @@ import SearchBar from '@/components/SearchBar';
 import MarkerForm from '@/components/MarkerForm';
 import MarkerList from '@/components/MarkerList';
 import InfoModal from '@/components/InfoModal';
-import { supabase } from '@/lib/supabase';
 import { reverseGeocode } from '@/lib/geocoding';
 import { getCityFromAddress } from '@/lib/utils';
 import { Marker, SearchResult } from '@/types';
+
+// ===== localStorage storage =====
+const STORAGE_KEY = 'ggmap_markers';
+
+function getMarkersFromStorage(): Marker[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveMarkersToStorage(markers: Marker[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(markers));
+  } catch {
+    // quota exceeded - ignore
+  }
+}
 
 // Dynamic import để tránh SSR (Leaflet cần window/document)
 const MapView = dynamic(() => import('@/components/MapView'), {
@@ -43,21 +64,10 @@ export default function Home() {
     lng: number;
   } | null>(null);
 
-  // ===== Fetch markers từ Supabase =====
-  const fetchMarkers = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('markers')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (data && !error) {
-      setMarkers(data);
-    }
-  }, []);
-
+  // ===== Load markers từ localStorage =====
   useEffect(() => {
-    fetchMarkers();
-  }, [fetchMarkers]);
+    setMarkers(getMarkersFromStorage());
+  }, []);
 
   // ===== Theo dõi vị trí hiện tại =====
   useEffect(() => {
@@ -175,23 +185,27 @@ export default function Home() {
   const handleSaveMarker = async (
     data: Omit<Marker, 'id' | 'created_at'>
   ) => {
+    const currentMarkers = getMarkersFromStorage();
+
     if (formMode === 'add') {
-      const { error } = await supabase.from('markers').insert([data]);
-      if (!error) {
-        await fetchMarkers();
-        setShowForm(false);
-      }
+      const newMarker: Marker = {
+        ...data,
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+      };
+      const updated = [newMarker, ...currentMarkers];
+      saveMarkersToStorage(updated);
+      setMarkers(updated);
     } else if (editingMarker) {
-      const { error } = await supabase
-        .from('markers')
-        .update(data)
-        .eq('id', editingMarker.id);
-      if (!error) {
-        await fetchMarkers();
-        setShowForm(false);
-        setEditingMarker(null);
-      }
+      const updated = currentMarkers.map((m) =>
+        m.id === editingMarker.id ? { ...m, ...data } : m
+      );
+      saveMarkersToStorage(updated);
+      setMarkers(updated);
+      setEditingMarker(null);
     }
+
+    setShowForm(false);
   };
 
   const handleDeleteMarker = async () => {
@@ -202,16 +216,12 @@ export default function Home() {
     );
     if (!confirmed) return;
 
-    const { error } = await supabase
-      .from('markers')
-      .delete()
-      .eq('id', editingMarker.id);
-
-    if (!error) {
-      await fetchMarkers();
-      setShowForm(false);
-      setEditingMarker(null);
-    }
+    const currentMarkers = getMarkersFromStorage();
+    const updated = currentMarkers.filter((m) => m.id !== editingMarker.id);
+    saveMarkersToStorage(updated);
+    setMarkers(updated);
+    setShowForm(false);
+    setEditingMarker(null);
   };
 
   // ===== Render =====

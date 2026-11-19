@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { Marker, Priority } from '@/types';
 import { getPriorityColor } from '@/lib/utils';
 
@@ -55,7 +54,7 @@ export default function MapView({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const currentLocMarkerRef = useRef<L.Marker | null>(null);
-  const [currentPosition, setCurrentPosition] = useState<{lat: number; lng: number} | null>(null);
+  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
   const onMapClickRef = useRef(onMapClick);
   const onMarkerClickRef = useRef(onMarkerClick);
 
@@ -71,7 +70,7 @@ export default function MapView({
       zoomControl: false,
     }).setView([10.7769, 106.7009], 12);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://openstreetmap.org">OSM</a>',
       maxZoom: 19,
     }).addTo(map);
@@ -85,31 +84,40 @@ export default function MapView({
     markersLayerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 
+    // Force recalc after container is properly sized
+    setTimeout(() => map.invalidateSize(), 0);
+
     // Get current location
+    let watchId: number | undefined;
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          // Guard: map may have been removed by cleanup (e.g. React Strict Mode)
+          if (!mapRef.current) return;
           const { latitude, longitude } = pos.coords;
           setCurrentPosition({ lat: latitude, lng: longitude });
-          map.setView([latitude, longitude], 13);
+          mapRef.current.setView([latitude, longitude], 13);
         },
-        () => {},
+        () => { },
         { enableHighAccuracy: true, timeout: 10000 }
       );
 
-      navigator.geolocation.watchPosition(
+      watchId = navigator.geolocation.watchPosition(
         (pos) => {
           setCurrentPosition({
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
           });
         },
-        () => {},
+        () => { },
         { enableHighAccuracy: true }
       );
     }
 
     return () => {
+      if (watchId !== undefined) {
+        navigator.geolocation.clearWatch(watchId);
+      }
       map.remove();
       mapRef.current = null;
     };
@@ -181,7 +189,7 @@ export default function MapView({
         title="Vị trí hiện tại (M)"
       >
         <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+          <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" />
         </svg>
       </button>
     </div>
